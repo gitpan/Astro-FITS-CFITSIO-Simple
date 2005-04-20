@@ -1,0 +1,26 @@
+Changes
+data/f001.fits
+data/f002.fits
+data/f003.fits
+data/image.fits
+lib/Astro/FITS/CFITSIO/Simple.pm
+lib/Astro/FITS/CFITSIO/Simple.pod
+lib/Astro/FITS/CFITSIO/Simple/Image.pm
+lib/Astro/FITS/CFITSIO/Simple/PDL.pm
+lib/Astro/FITS/CFITSIO/Simple/Table.pm
+Makefile.PL
+MANIFEST			This list of files
+README
+t/00PDL.t
+t/00Simple.t
+t/common.pl
+t/image_auto.t
+t/image_dtype.t
+t/namedhdu.t
+t/ndim.t
+t/pod.t
+t/reset.t
+t/ret.t
+t/rfilter.t
+t/table_dtypes.t
+META.yml                                 Module meta-data (added by MakeMaker)
