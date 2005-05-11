@@ -454,6 +454,7 @@ sub _rdfitsTable
 	$col->{tmppdl}->upd_data;
 
 	# transfer the data to the final piddle
+#print STDERR "here\n"; flush STDERR;
 	$col->{dataxfer}->($col, $rows_done, $rows_this_time);
 	$col->{data}->badflag($col->{anynul}) if $PDL::Bad::Status;
 
@@ -629,21 +630,36 @@ sub map_bits
   my $code = '';
   $code = q/ my ( $col, $start, $nrows ) = @_;
                    my $dst = $col->{data}->dummy(0);
-                   $dst .= 0;
 		   my $src = $col->{tmppdl};
                 /;
-  for my $pidx ( 0..$col->{tmpnaxes}[0]-1 ) {
+
+  my $dst = join( '',
+		  '$dst->mslice([],',
+		  '[],' x (@{$col->{naxes}}), 
+		  '[$start,$start+$nrows-1])' );
+
+
+  if ( $col->{tmpnaxes}[0] > 1 )
+  {
+    $code .= "$dst .= 0;\n";
+
+    for my $pidx ( 0..$col->{tmpnaxes}[0]-1 ) {
+      my $src =  join('',
+		      '$src->mslice([', $pidx , '],',
+		      '[],' x (@{$col->{tmpnaxes}}-1),
+		      '[0,$nrows-1]) << ', 8*$pidx );
+
+      $code .= "$dst |= $src;\n";
+    }
+  }
+  else
+  {
     my $src =  join('',
-		    '$src->mslice([', $pidx , '],',
+		    '$src->mslice([0],',
 		    '[],' x (@{$col->{tmpnaxes}}-1),
-		    '[0,$nrows-1]) << ', 8*$pidx );
+		    '[0,$nrows-1])' );
 
-    my $dst = join( '',
-		    '$dst->mslice([],',
-		    '[],' x (@{$col->{naxes}}), 
-		    '[$start,$start+$nrows-1])' );
-
-    $code .= "$dst |= $src;\n;";
+    $code .= "$dst .= $src;\n";
   }
 
   $code;

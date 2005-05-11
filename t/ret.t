@@ -16,7 +16,7 @@ my $file = 'data/f001.fits';
   my $msg = "return hash";
   my %data;
   eval {
-    %data = rdfits( $file );
+    %data = rdfits( $file, { ninc => 1 } );
   };
 
   ok ( ! $@, $msg ) or diag( $@ );
@@ -33,7 +33,7 @@ my $file = 'data/f001.fits';
   my $msg = "return list";
   my @data;
 
-  eval { @data = rdfits( $file, @simplebin_cols ) };
+  eval { @data = rdfits( $file, @simplebin_cols, { ninc => 1 } ) };
   ok( !$@, $msg ) or diag( $@ );
 
   is( scalar( @data ), scalar ( @simplebin_cols ), "$msg: ncols" );
@@ -79,7 +79,7 @@ my $file = 'data/f001.fits';
     $toggle = 1 - $toggle;
   } 
 
-  eval { @data = rdfits( $file, @ncols ) };
+  eval { @data = rdfits( $file, @ncols, { ninc => 1 } ) };
   ok( !$@, $msg ) or diag( $@ );
 
   is( scalar( @data ), scalar( @simplebin_cols) , "$msg: ncols" );

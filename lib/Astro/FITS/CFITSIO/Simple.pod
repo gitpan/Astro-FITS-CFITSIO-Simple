@@ -103,15 +103,14 @@ of FITS headers.
 
 =head3 Reading Bit Data
 
-Table data with type BIT are by default mapped onto a PDL type
-which best matches the FITS element size, with the packing of the bits
-preserved. The user may override this type using the C<-dtypes>
-option (see the description under "Table Options"below).  Because of
-the way this is currently done, this is I<really> slow.
+Table data with type BIT are by default mapped onto a PDL type which
+best matches the FITS element size, with the packing of the bits
+preserved. The user may override this type using the C<-dtypes> option
+(see the description under "Table Options"below).
 
-Another option is to treat each bit as an independent quantity,
-with each bit stored in its own piddle element.  This may be accomplished by
-specifying the PDL type (via C<-dtypes>) as the string C<logical>.
+Another option is to treat each bit as an independent quantity, with
+each bit stored in its own piddle element.  This may be accomplished
+by specifying the PDL type (via C<-dtypes>) as the string C<logical>.
 Bits will then be stored as bytes, with each byte representing a bit.
 
 =head2 Functions

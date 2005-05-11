@@ -24,9 +24,17 @@ my %cols = create_data();
 
 #write_file( $filename, %cols );
 
+
+# ninc => 1 to trap errors where the entire destination array was
+# being reset to 0 before or'ing the new data, rather than just
+# the slice appropriate for that chunk of rows.  since the data
+# files are small, there's but one chunk, and this wasn't caught.
+
 my %data = rdfits( $filename, { retinfo => 1,
+				ninc => 1,
 				dtypes => { c1 => 'logical',
-					    c2 => 'logical' },
+					    c2 => 'logical',
+					   },
 			      } );
 
 # modify c6 outgoing data as it's in bytes and rdfits should have read
@@ -37,10 +45,9 @@ my %data = rdfits( $filename, { retinfo => 1,
   $cols{c6}{data} = $data->borover;
 }
 
-
 while( my ( $name, $col ) = each %cols )
 {
-  ok( all $col->{data} == $data{$name}{data}, $name );
+  ok( all ($col->{data} == $data{$name}{data}), $name );
 }
 
 
