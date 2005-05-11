@@ -1,5 +1,11 @@
 Revision history for Perl extension Astro::FITS::CFITSIO::Simple.
 
+0.1  Wed May 11 09:26:24 EDT 2005
+	- much improved support for bit fields; now can either
+	  map bit for bit or as logicals
+	- status output
+	- can specify columns to *not* read
+
 0.03  Tue Oct 19 12:33:05 EDT 2004
         - retinfo=1 resulted in the original, unfiltered data, being
 	  returned 

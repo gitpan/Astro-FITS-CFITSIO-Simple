@@ -7,6 +7,7 @@ WriteMakefile(
     VERSION_FROM      => 'lib/Astro/FITS/CFITSIO/Simple.pm', # finds $VERSION
     PREREQ_PM         => {
 			  Params::Validate => 0.72,
+			  Scalar::Util => 0,
 			  Astro::FITS::CFITSIO => 1.02,
 			  Astro::FITS::CFITSIO::CheckStatus => 0.03,
 			  Astro::FITS::Header::CFITSIO,

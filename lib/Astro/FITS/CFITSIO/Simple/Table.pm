@@ -10,6 +10,8 @@ use Params::Validate qw/ :all /;
 
 use Carp;
 
+use POSIX ();
+use Scalar::Util qw/blessed/;
 use PDL;
 
 use Astro::FITS::CFITSIO qw/ :constants /;
@@ -37,7 +39,9 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
+
+
 
 
 # this must be called ONLY from rdfits.  it makes assumptions about
@@ -54,8 +58,10 @@ sub _rdfitsTable
   my $fptr = shift;
   my $cleanup  = shift;
 
-    croak( "column names must be scalars\n" ) if grep { ref $_ } @_;
+  croak( "column names must be scalars\n" ) if grep { ref $_ } @_;
+
   my @req_cols = map { lc $_ } @_;
+
 
   my %opt = 
     validate_with( params => [ $opts ],
@@ -68,9 +74,12 @@ sub _rdfitsTable
 		  rethash  => { type => SCALAR,  default  => 0 },
 		  retinfo  => { type => SCALAR,  default  => 0 },
 		  rethdr   => { type => SCALAR,  default  => 0 },
+		  status   => { callbacks =>
+			        {
+				  "boolean, filehandle, subroutine, or object" => \&validate_status
+				},
+				optional => 1 },
 		 } );
-
-  $opt{rethash} = 1 unless @_ || $opt{retinfo};
 
   # data structure describing the columns
   my %cols;
@@ -78,31 +87,48 @@ sub _rdfitsTable
   # final list of columns (not column names!)
   my @cols;
 
+  # CFITSIO status variable
   tie my $status, 'Astro::FITS::CFITSIO::CheckStatus';
 
   # normalize column names for user specified types.
   my %user_types = map { lc($_) => $opt{dtypes}{$_} } keys %{$opt{dtypes}};
 
+
+  # see if we're to delete columns
+  my @del_cols = map { s/-//; $_ } grep { /^-/ } @req_cols;
+
+  # if columns are to be deleted, can't have any other things in the list
+  die( "can't mix -col and col specifictions in list of columns\n" )
+    if @del_cols && @del_cols != @req_cols;
+
+  @req_cols = ()
+  if @del_cols;
+
+  my %del_cols = map { ( $_ => 1 ) } @del_cols;
+
+
   # hash of requested column names (if any); used to track
   # non-existant columns
   my %req_cols = map { ( $_ => 0 ) } @req_cols;
 
+  # by default return a hash of data unless columns are requested (del_cols don't count)
+  $opt{rethash} = 1 unless @req_cols || $opt{retinfo};
 
   # grab header
-
   my $hdr = new Astro::FITS::Header::CFITSIO( fitsID => $fptr );
 
   # grab the number of columns and rows in the HDU
   $fptr->get_num_cols( my $ncols, $status );
   $fptr->get_num_rows( my $nrows, $status);
 
+  # this is the number of rows to process at one time.
   my $ninc = $opt{ninc};
   $ninc or $fptr->get_rowsize($ninc, $status);
   $ninc = $nrows if $nrows < $ninc;
 
-  # transfer buffers until we can figure out how to read chunks directly
-  # into the final piddles. These are indexed off of the shape of the
-  # piddle so that we can reuse them and save memory.
+  # use transfer buffers until we can figure out how to read chunks
+  # directly into the final piddles. These are indexed off of the
+  # shape of the piddle so that we can reuse them and save memory.
   my %tmppdl;
 
   # create data structure describing the columns
@@ -142,19 +168,19 @@ sub _rdfitsTable
       }
     }
 
+    # we don't care about a column if it wasn't requested (if any
+    # were requested)
+    next if exists $del_cols{$name} || ( @req_cols && ! exists $req_cols{ $name } );
+    $req_cols{$name}++;
+
     # preset fields used as arguments to CFITSIO as that doesn't seem
     # to  auto-vivify them
-    my $col = $cols{$name} = 
-    {
-     map { $_ => undef } qw/ btype repeat width naxes btype / };
+    my $col = $cols{$name} =
+       { map { $_ => undef } qw/ btype repeat width naxes btype / };
 
     $col->{n} = $coln;
     $col->{name} = $name;
 
-    # we don't care about a column if it wasn't requested (if any
-    # were requested)
-    next if @req_cols && ! exists $req_cols{ $name };
-    $req_cols{$name}++;
 
     $fptr->get_eqcoltype( $coln, $col->{btype}, $col->{repeat},
 			  $col->{width}, $status );
@@ -164,12 +190,6 @@ sub _rdfitsTable
     $fptr->read_tdim( $coln, my $naxis, $col->{naxes} = [], $status );
     $fptr->perlyunpacking(0);
 
-    # simplify data layout if this is truly a 1D data set (else
-    # PDL will create a ( 1 x N ) piddle, which is unexpected.
-    # can't get rid of singleton dimensions if this is a n > 1 dim data set
-    $col->{naxes} = []
-      if $naxis == 1 && 1 == $col->{naxes}[0];
-
     # figure out what sort of piddle to store the data in
     $col->{ptype} = undef;
 
@@ -178,14 +198,37 @@ sub _rdfitsTable
     {
       my $type = delete $user_types{$name};
 
-      if ( ! UNIVERSAL::isa( $type, 'PDL::Type' ) )
+      # bit columns are so special
+      if ( TBIT == $col->{btype} )
+      {
+	# this results in one piddle byte per bit
+	if ( $type =~ /logical/ )
+	{
+	  $col->{ptype} = byte;
+	  $col->{ctype} = TBIT;
+	}
+	elsif ( ! UNIVERSAL::isa( $type, 'PDL::Type' ) )
+	{
+	  croak( "unrecognized user specified type for column '$name'" );
+	}
+	elsif ( $type != byte && $type != ushort && $type != long )
+	{
+	  croak( "bit column type must be byte, ushort, long, or the string 'logical'\n" );
+	}
+	else
+	{
+	  $col->{ptype} = $type;
+	  $col->{ctype} = TBYTE;
+	}
+      }
+
+      elsif ( ! UNIVERSAL::isa( $type, 'PDL::Type' ) )
       {
 	croak( "unrecognized user specified type for column '$name'" );
       } elsif (   $col->{btype} == TLOGICAL
-		  || $col->{btype} == TBIT
 		  || $col->{btype} == TSTRING )
       {
-	carp("ignoring user specified type for column '$name': either LOGICAL, BIT or STRING" );
+	carp("ignoring user specified type for column '$name': either LOGICAL, STRING" );
       } else
       {
 	$col->{ptype} = $type;
@@ -193,54 +236,109 @@ sub _rdfitsTable
 
     }
 
-    # user didn't set it?
-    eval { 
-      $col->{ptype} = fits2pdl_coltype( $col->{btype} )
-	unless defined $col->{ptype} 
+    # user didn't set it?  TBIT is still so special; all handling is done below
+    if ( TBIT != $col->{btype} && ! defined $col->{ptype} )
+    {
+      eval {
+	$col->{ptype} = fits2pdl_coltype( $col->{btype} );
       };
-    croak( "column $col->{name}: $@\n" )
-      if $@;
+      croak( "column $col->{name}: $@\n" )
+	if $@;
+    }
 
-    # what kind of null value do we need?
-    $col->{nullval} = $PDL::Bad::Status ? badvalue( $col->{ptype} ) : undef;
-    $col->{anynul} = 0;
 
-    # shape of temporary storage for this piddle.
-    $col->{tmpshape} = join( ",", $col->{ptype},
-			     @{$col->{naxes}}, $ninc );
+    # create the storage area 
 
-    # create the storage area
-    if ( TSTRING != $col->{btype} ) {
+    # note that we have to match the PDL storage type to the closest
+    # CFITSIO type, based primarily on size.
+
+    # strings get read into Perl variables
+    if ( TSTRING == $col->{btype} )
+    {
+      $col->{data} = [];
+
+      # not meaningful
+      $col->{ctype} = undef;
+    }
+
+    else
+    {
+
+      my $code = '';
+
+      # if this is a bit column, and the user hasn't specified that
+      # "logical" piddles be used, create a dense map
+      if ( TBIT == $col->{btype} && 
+	   ! ( defined $col->{ctype} && TBIT == $col->{ctype}) )
+      {
+	$code = map_bits( $col );
+      }
+
+      else
+      {
+	# simplify data layout if this is truly a 1D data set (else
+	# PDL will create a ( 1 x N ) piddle, which is unexpected.
+	# can't get rid of singleton dimensions if this is a n > 1 dim
+	# data set
+	$col->{naxes} = []
+	  if @{$col->{naxes}} == 1 && 1 == $col->{naxes}[0];
+
+
+	if ( $col->{btype} == TLOGICAL() )
+	{
+	  $col->{ctype} = TLOGICAL();
+	}
+
+	# ctype may have beend defined above; make sure we don't overwrite it.
+	elsif ( ! defined $col->{ctype} )
+	{
+	  $col->{ctype} = pdl2cfitsio($col->{ptype});
+	}
+
+	# shape of temporary is same as shape of final
+	$col->{tmpnaxes} = $col->{naxes};
+
+	# same repeat count as final
+	$col->{tmprepeat} = $col->{repeat};
+
+	# set up formats for destination and source slices to copy
+	# from temp to final destination 
+	$col->{dst_slice} = ':,' x @{$col->{naxes}} . '%d:%d';
+	$col->{src_slice} = ':,' x @{$col->{naxes}} . '0:%d';
+
+
+	$code = q/ my ( $col, $start, $nrows ) = @_;
+	  my $dest = sprintf($col->{dst_slice}, $start, 
+			     $start + $nrows - 1);
+	  my $src  = sprintf($col->{src_slice}, $nrows - 1);
+	  (my $t = $col->{data}->slice($dest)) .= $col->{tmppdl}->slice($src);
+                   /;
+      }
+
+      eval '$col->{dataxfer} = sub { ' . $code . '}';
+      croak( "internal error in generating dataxfer code: $@\n" )
+	if $@;
 
       # create final and temp piddles.
       $col->{data}   = PDL->new_from_specification( $col->{ptype},
 						    @{$col->{naxes}}, $nrows );
 
+      # shape of temporary storage for this piddle.
+      $col->{tmpshape} = join( ",", $col->{ptype}, 
+			       @{$col->{tmpnaxes}}, $ninc );
+
       # reuse tmppdls
-      $tmppdl{$col->{tmpshape}} = 
-	PDL->new_from_specification( $col->{ptype},
-				     @{$col->{naxes}}, $ninc )
+      $tmppdl{$col->{tmpshape}} =
+	PDL->new_from_specification( $col->{ptype}, 
+				     @{$col->{tmpnaxes}}, $ninc )
 	  unless defined $tmppdl{$col->{tmpshape}};
 
       $col->{tmppdl} = $tmppdl{$col->{tmpshape}};
 
-      # set up formats for destination and source slices to copy
-      # from temp to final destination 
-      $col->{dst_slice} = ':,' x @{$col->{naxes}} . '%d:%d';
-      $col->{src_slice} = ':,' x @{$col->{naxes}} . '0:%d';
 
-    } else {
-      $col->{data} = [];
+      $col->{nullval} = $PDL::Bad::Status ? badvalue( $col->{ptype} ) : undef;
+      $col->{anynul} = 0;
     }
-
-    # what shall we tell CFITSIO that we're reading? some deception,
-    # as all we care about is the size of the data type
-    do {
-      $col->{btype} == TLOGICAL() and $col->{ctype} = TLOGICAL(), last;
-      $col->{btype} == TBYTE()    and $col->{ctype} = TBIT()    , last;
-      $col->{btype} == TSTRING()  and $col->{ctype} = undef   , last;
-      $col->{ctype} = pdl2cfitsio($col->{ptype});
-    };
 
     # grab extra column information if requested
     if ( $opt{retinfo} )
@@ -291,8 +389,27 @@ sub _rdfitsTable
     $ngood = 0;
   }
 
+  # start status output
+  # prepare for status updates
+  my $progress;
+  if ( defined $opt{status} )
+  {
+    require Astro::FITS::CFITSIO::Simple::PrintStatus;
+    eval {
+      $progress = Astro::FITS::CFITSIO::Simple::PrintStatus->new( $opt{status}, $nrows );
+    };
+    croak($@) if $@;
+  }
+
+
+  $progress->start( ) if $progress;
+
+  my $next_update = 0;
   my $rows_done = 0;
   while ($rows_done < $nrows) {
+
+  $next_update = $progress->update( $rows_done )
+    if $progress && $rows_done >= $next_update;
 
     my $rows_this_time = $nrows - $rows_done;
     $rows_this_time = $ninc if $rows_this_time > $ninc;
@@ -306,7 +423,8 @@ sub _rdfitsTable
 			$status = "error filtering rows: rfilter = '$opt{rfilter}'" );
       $tmp_good_mask->upd_data;
 
-      (my $t = $good_mask->mslice( [$rows_done, $rows_done+$rows_this_time-1]) ) .=
+      (my $t = $good_mask->mslice( [$rows_done, 
+				    $rows_done+$rows_this_time-1]) ) .=
 	$tmp_good_mask->mslice( [0, $rows_this_time-1] );
 
       $ngood += $tmp_ngood;
@@ -317,13 +435,16 @@ sub _rdfitsTable
     }
 
     for my $col ( @cols ) {
+
+      # beware of empty repeat fields
       next unless $col->{repeat};
 
       if (TSTRING != $col->{btype} ) {
+
 	$fptr->read_col( $col->{ctype},
 			 $col->{n},
 			 $rows_done+1, 1,
-			 $col->{repeat} * $rows_this_time,
+			 $col->{tmprepeat} * $rows_this_time,
 			 $col->{nullval},
 			 ${$col->{tmppdl}->get_dataref},
 			 $col->{anynul},
@@ -332,12 +453,8 @@ sub _rdfitsTable
 
 	$col->{tmppdl}->upd_data;
 
-	my $dest = sprintf($col->{dst_slice}, $rows_done, 
-			   $rows_done + $rows_this_time - 1);
-	my $src  = sprintf($col->{src_slice}, $rows_this_time - 1);
-
-	(my $t = $col->{data}->slice($dest)) .= $col->{tmppdl}->slice($src);
-
+	# transfer the data to the final piddle
+	$col->{dataxfer}->($col, $rows_done, $rows_this_time);
 	$col->{data}->badflag($col->{anynul}) if $PDL::Bad::Status;
 
       } else {			# string type
@@ -356,6 +473,7 @@ sub _rdfitsTable
 
     }
     $rows_done += $rows_this_time;
+
   }
 
   if ($nrows && $opt{rfilter}) {
@@ -363,6 +481,8 @@ sub _rdfitsTable
     my $good_index = which($good_mask);
 
     for my $col ( @cols ) {
+
+      # beware of empty repeat fields
       next unless $col->{repeat};
 
       if ( TSTRING != $col->{btype} ) {
@@ -375,13 +495,19 @@ sub _rdfitsTable
   }
 
 
+  # it's all done
+  $progress->update( $nrows ) 
+    if $progress && $nrows >= $next_update;
+
+  $progress->finish()
+    if $progress;
+
   # how shall i return the data? let me count the ways...
   if ( $opt{retinfo} )
   {
     # gotta put the data into the retinfo structure.
     # it's safer to do that here, as we have reassigned 
     # $col->{data} above.
-
     my %retvals;
     foreach ( @cols )
     {
@@ -424,6 +550,121 @@ sub _rdfitsTable
 
   croak( "rdfitsTable called in scalar context, but it read more than one column?\n" );
 
+}
+
+# map a BIT column onto the best fit pdl type.  this stores the
+# bits as densely as possible.
+sub map_bits
+{
+  my ( $col ) = @_;
+
+  # we're not reading bit columns into boolean vectors (i.e. each
+  # piddle element is one bit). we do a bit of soft shoe to first
+  # read the bit columns as bytes into the temp array and then
+  # bitwise or them into the final piddle
+
+  # if the user hasn't specified the final piddle type the
+  # special code paths above ensure that $col->{ptype} is still
+  # undefined.  in this case we try to find the best sized PDL
+  # type for the FITS element size, where the latter is the
+  # first element in the tdim array (which will be the column
+  # repeat value if TDIMn isn't given).
+
+  # the number of bytes needed to hold the number of bits. round up.
+  my $nbytes = POSIX::ceil($col->{naxes}[0] / 8 );
+
+  unless ( defined $col->{ptype} ) {
+    # fall back to using bytes
+    $col->{ptype} = byte;
+
+    # find the smallest PDL type that will hold an element of the data
+    for my $type ( byte, ushort, long ) # no longlong yet
+      {
+	next unless PDL::Core::howbig($type->enum) == $nbytes;
+	$col->{ptype} = $type;
+	last;
+      }
+  }
+
+  # the number of integral piddles required to hold a single element
+  my $npiddle =
+    POSIX::ceil($nbytes / PDL::Core::howbig($col->{ptype}->enum));
+
+  # adjust to reflect the fact that the "repeat" count is no
+  # longer in bits.
+  $col->{naxes}[0] = $npiddle;
+  shift @{$col->{naxes}} if $npiddle == 1;
+
+  # simplify data layout if this is truly a 1D data set (else
+  # PDL will create a ( 1 x N ) piddle, which is unexpected.
+  # can't get rid of singleton dimensions if this is a n > 1 dim
+  # data set
+  $col->{naxes} = []
+    if @{$col->{naxes}} == 1 && 1 == $col->{naxes}[0];
+
+  # recalculate repeat value
+  $col->{repeat} = 1;
+  $col->{repeat} *= $_ foreach @{$col->{naxes}};
+
+  # temp piddle type is same as final piddle, as we may have to
+  # shift bits, and we don't want them to shift off of the
+  # element
+  $col->{ctype} = pdl2cfitsio($col->{ptype}) 
+    unless defined $col->{ctype};
+
+  # shape of temporary storage for this piddle. we rework
+  # $col->{naxes} which now is in terms of $col->{ptype}, not in
+  # bits. we want it in bytes, as that's the smallest chunk of
+  # bits CFITSIO will give us
+  my @naxes = (1, @{$col->{naxes}});
+  $naxes[0] = PDL::Core::howbig( $col->{ptype}->enum );
+
+  $col->{tmpnaxes} = \@naxes;
+
+  # up the repeat count to handle the fact we're reading in bytes
+  $col->{tmprepeat} = 1;
+  $col->{tmprepeat} *= $_ foreach @naxes;
+
+  # generate subroutine to copy from temp to final
+  my $code = '';
+  $code = q/ my ( $col, $start, $nrows ) = @_;
+                   my $dst = $col->{data}->dummy(0);
+                   $dst .= 0;
+		   my $src = $col->{tmppdl};
+                /;
+  for my $pidx ( 0..$col->{tmpnaxes}[0]-1 ) {
+    my $src =  join('',
+		    '$src->mslice([', $pidx , '],',
+		    '[],' x (@{$col->{tmpnaxes}}-1),
+		    '[0,$nrows-1]) << ', 8*$pidx );
+
+    my $dst = join( '',
+		    '$dst->mslice([],',
+		    '[],' x (@{$col->{naxes}}), 
+		    '[$start,$start+$nrows-1])' );
+
+    $code .= "$dst |= $src;\n;";
+  }
+
+  $code;
+}
+
+
+
+# quick and dirty validation for the status option
+sub validate_status
+{
+  # scalar (boolean)
+       ! ref $_[0]
+
+  # object with appropriate methods
+  ||   ( blessed( $_[0] ) && $_[0]->can('print') && $_[0]->can('flush')  )
+
+  # filehandle
+  || 'GLOB' eq ref $_[0]
+
+  # subroutine
+  || 'CODE' eq ref $_[0]
 }
 
 1;

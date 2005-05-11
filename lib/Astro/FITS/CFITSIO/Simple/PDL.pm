@@ -147,9 +147,9 @@ sub fits2pdl_coltype {
   croak( "unsupported CFITSIO/FITS type: $fits_type\n" )
     unless exists $CFITSIO2PDL_COL{$nfits_type};
 
-  $CFITSIO2PDL_COL{$nfits_type};
-}
 
+  return $CFITSIO2PDL_COL{$nfits_type};
+}
 
 
 ##########################################################################

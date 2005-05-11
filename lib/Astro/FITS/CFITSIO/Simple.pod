@@ -53,12 +53,22 @@ Table data are returned as a hash if no column names are specified.
 
   %table = rdfits( 'table.fits' );
 
+In this case all columns are returned.  However, if a list of column
+names prefixed by the C<-> character is given, these
+columns will I<not> be returned.  For example:
+
+  %table = rdfits( 'table.fits', qw/ -status -boring / );
+
+"Subtractive" column designations may not be mixed with "additive"
+column designations.
+
 =item *
 
 Table data are returned as a list if column names are specified and
 B<rdfits> was called in an array (list) context.
 
   @coldata = rdfits( 'table.fits', 'col1', 'col2' );
+
 
 =item *
 
@@ -71,6 +81,11 @@ depending upon data type).
 =back 
 
 Some of this behavior may be changed using the C<rethash> option.
+
+Normally B<rdfits> maps the FITS column type (double, long, etc) to
+the best matched PDL type.  This may be overriden (for instance to
+promote floats to doubles) using the C<dtypes> option.  Bit columns
+are a bit different.  (See L</Reading Bit Data>).
 
 B<rdfits> can optionally return the full FITS header.  If an image is
 read, the resultant piddle's header is set to a hash tied to a
@@ -85,6 +100,19 @@ B<rethdr> option below for more information.
 
 See L<Astro::FITS::Header> for more information on its representation
 of FITS headers.
+
+=head3 Reading Bit Data
+
+Table data with type BIT are by default mapped onto a PDL type
+which best matches the FITS element size, with the packing of the bits
+preserved. The user may override this type using the C<-dtypes>
+option (see the description under "Table Options"below).  Because of
+the way this is currently done, this is I<really> slow.
+
+Another option is to treat each bit as an independent quantity,
+with each bit stored in its own piddle element.  This may be accomplished by
+specifying the PDL type (via C<-dtypes>) as the string C<logical>.
+Bits will then be stored as bytes, with each byte representing a bit.
 
 =head2 Functions
 
@@ -172,8 +200,8 @@ objects of the type wanted. For example:
 
 This will force the PDL type of C<$a> to float, and C<$c> to short,
 while choosing the best match datatype for C<$b>. It is not possible
-for the user to specify dtypes for C<LOGICAL>, C<ASCII> and C<BIT>
-type columns.
+for the user to specify dtypes for C<LOGICAL> and C<ASCII> type
+columns.  C<BIT> columns are special; see L</Reading Bit Data> above.
 
 =item ninc
 
@@ -196,7 +224,7 @@ default mode if no columns are specified.
 This Boolean option indicates that the HDU's header should be returned
 as well as the data.  
 
-=over 8
+=over
 
 =item * 
 
@@ -296,6 +324,39 @@ has access to I<all> of the columns in the HDU, not just the ones
 being read out.  This can radically reduce memory requirements if
 a complicated row selection is made.
 
+=item status
+
+This option indicates that progress status should be output.
+B<status> can take one of the following values:
+
+=over
+
+=item a scalar
+
+If true, a progress bar is written to the standard error stream.
+If the B<Term::ProgressBar> module is available, a fairly nice
+one is emitted.  (The more primitive style may be forced by
+setting the value to C<-1>).
+
+=item a file glob
+
+In this case output is sent to the specified file handle.
+
+=item an object reference
+
+If the object supports the B<print()> and B<flush()> methods, these
+are called to output the progress status.  (Nice objects are,
+for example IO::File objects).
+
+=item a code reference
+
+The code reference is called with two parameters: the number of rows
+read, and the total number to be read.
+
+=back
+
+Typically output is produced approximately at 1% increment steps.
+
 =back
 
 =item Image Options
@@ -347,8 +408,8 @@ None by default.
 =head1 BUGS
 
 The module claims to support unsigned integer and long types as
-returned by CFITSIO, but it really turns them into straight longs.
-PDL doesn't have native unsigned ints and longs).
+returned by CFITSIO, but it really turns them into longs.
+PDL doesn't have native unsigned ints and longs.
 
 =head1 SEE ALSO
 
