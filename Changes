@@ -1,5 +1,8 @@
 Revision history for Perl extension Astro::FITS::CFITSIO::Simple.
 
+0.14 Mon Aug 22 13:02:02 EDT 2005
+        - forgot to update the README to reflect the patches.
+
 0.13 Mon Aug 22 12:40:59 EDT 2005
         - It turns out that this module was developed against a
 	  patched, non-distributed version of Astro::FITS::Header 2.8.1
