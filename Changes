@@ -1,5 +1,23 @@
 Revision history for Perl extension Astro::FITS::CFITSIO::Simple.
 
+0.13 Mon Aug 22 12:40:59 EDT 2005
+        - It turns out that this module was developed against a
+	  patched, non-distributed version of Astro::FITS::Header 2.8.1
+	  Unfortunately, that version is required for this module
+	  to work.  The patches are available here:
+
+	     https://rt.cpan.org/NoAuth/Bug.html?id=4816
+	     https://rt.cpan.org/NoAuth/Bug.html?id=11722
+
+
+	- minor error formatting output fixes.
+
+
+0.12 Thu May 12 11:45:13 EDT 2005
+
+	- test for inappropriate call in scalar context when reading
+	  multiple columns was broken
+
 0.11 Wed May 11 15:34:55 EDT 2005
 
 	- when processing bit fields as bits (not logicals), the

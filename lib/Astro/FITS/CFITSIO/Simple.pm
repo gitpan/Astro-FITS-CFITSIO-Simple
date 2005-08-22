@@ -37,7 +37,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.11';
+our $VERSION = '0.13';
 
 # cheap and dirty clean up object so that we can maintain
 # return contexts in rdfits and its delegates by having

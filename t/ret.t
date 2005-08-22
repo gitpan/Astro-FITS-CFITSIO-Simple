@@ -1,4 +1,4 @@
-use Test::More tests => 44;
+use Test::More tests => 45;
 
 use strict;
 use warnings;
@@ -53,10 +53,16 @@ my $file = 'data/f001.fits';
   ok( UNIVERSAL::isa( $data, 'PDL' ), "$msg: class" );
 }
 
-# bad context mix
+# implicit columns, scalar context
 {
   eval { my $data = rdfits( $file, @simplebin_cols ) };
-  like( $@, qr/scalar context/, "bad return context" );
+  like( $@, qr/scalar context/, "scalar context, explicit columns" );
+}
+
+# implicit columns, scalar context
+{
+  eval { my $data = rdfits( $file ) };
+  like( $@, qr/scalar context/, "scalar context, implicit columns" );
 }
 
 # mix up column positions; simplebin_cols is the same order as what's in

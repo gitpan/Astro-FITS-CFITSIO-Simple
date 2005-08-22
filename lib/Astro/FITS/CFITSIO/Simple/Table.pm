@@ -22,13 +22,6 @@ use Astro::FITS::Header::CFITSIO;
 
 our @ISA = qw(Exporter);
 
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use Astro::FITS::CFITSIO::Table ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
   _rdfitsTable
 ) ] );
@@ -38,10 +31,6 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 	
 );
-
-our $VERSION = '0.02';
-
-
 
 
 # this must be called ONLY from rdfits.  it makes assumptions about
@@ -111,7 +100,8 @@ sub _rdfitsTable
   # non-existant columns
   my %req_cols = map { ( $_ => 0 ) } @req_cols;
 
-  # by default return a hash of data unless columns are requested (del_cols don't count)
+  # by default return a hash of data unless columns are requested
+  # (del_cols don't count)
   $opt{rethash} = 1 unless @req_cols || $opt{retinfo};
 
   # grab header
@@ -170,7 +160,8 @@ sub _rdfitsTable
 
     # we don't care about a column if it wasn't requested (if any
     # were requested)
-    next if exists $del_cols{$name} || ( @req_cols && ! exists $req_cols{ $name } );
+    next if exists $del_cols{$name} || 
+      ( @req_cols && ! exists $req_cols{ $name } );
     $req_cols{$name}++;
 
     # preset fields used as arguments to CFITSIO as that doesn't seem
@@ -359,7 +350,7 @@ sub _rdfitsTable
   # now, complain about extra parameters
   {
     my @notfound = grep { ! $req_cols{$_} } keys %req_cols;
-    croak( "requested column(s) not in file: ", join(", ", @notfound), "\n" )
+    croak( "requested column(s) not in file: ", join(", ", @notfound) )
       if @notfound;
 
     croak( "user specified type(s) for columns not in file: ", 
@@ -378,8 +369,8 @@ sub _rdfitsTable
   # scalar context, more than one column returned? doesn't make sense,
   # does it?
   # test for this early, as it may be an expensive mistake...
-  croak( "rdfitsTable called in scalar context, but it read more than one column?\n" ) 
-    if ! wantarray() && @req_cols > 1;
+  croak( "rdfitsTable called in scalar context, but it's to read more than one column?\n" ) 
+    if ! wantarray() && @cols > 1;
 
   # create masks if we'll be row filtering
   my ($good_mask, $tmp_good_mask, $ngood);
