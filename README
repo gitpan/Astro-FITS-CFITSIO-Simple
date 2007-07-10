@@ -34,6 +34,8 @@ the problems on the following web sites.
         https://rt.cpan.org/NoAuth/Bug.html?id=4816
         https://rt.cpan.org/NoAuth/Bug.html?id=11722
 
+Asgtro::FITS::Header version 3.000 does not suffer from these bugs, and
+does not require the patches.
 
 COPYRIGHT AND LICENCE
 

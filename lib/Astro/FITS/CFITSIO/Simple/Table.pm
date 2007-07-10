@@ -311,17 +311,20 @@ sub _rdfitsTable
 	if $@;
 
       # create final and temp piddles.
-      $col->{data}   = PDL->new_from_specification( $col->{ptype},
-						    @{$col->{naxes}}, $nrows );
+      $col->{data} =
+	$nrows
+	  ? PDL->new_from_specification( $col->{ptype}, @{$col->{naxes}}, $nrows )
+	  : PDL->null;
 
       # shape of temporary storage for this piddle.
-      $col->{tmpshape} = join( ",", $col->{ptype}, 
+      $col->{tmpshape} = join( ",", $col->{ptype},
 			       @{$col->{tmpnaxes}}, $ninc );
 
       # reuse tmppdls
       $tmppdl{$col->{tmpshape}} =
-	PDL->new_from_specification( $col->{ptype}, 
-				     @{$col->{tmpnaxes}}, $ninc )
+	( $ninc 
+	    ? PDL->new_from_specification( $col->{ptype}, @{$col->{tmpnaxes}}, $ninc )
+	    : PDL->null )
 	  unless defined $tmppdl{$col->{tmpshape}};
 
       $col->{tmppdl} = $tmppdl{$col->{tmpshape}};
@@ -374,7 +377,8 @@ sub _rdfitsTable
 
   # create masks if we'll be row filtering
   my ($good_mask, $tmp_good_mask, $ngood);
-  if ($opt{rfilter}) {
+
+  if ($nrows && $opt{rfilter}) {
     $good_mask = ones(byte,$nrows);
     $tmp_good_mask = ones(byte,$ninc);
     $ngood = 0;

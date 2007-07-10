@@ -6,11 +6,12 @@ WriteMakefile(
     NAME              => 'Astro::FITS::CFITSIO::Simple',
     VERSION_FROM      => 'lib/Astro/FITS/CFITSIO/Simple.pm', # finds $VERSION
     PREREQ_PM         => {
+			  PDL => 0,
 			  Params::Validate => 0.72,
 			  Scalar::Util => 0,
 			  Astro::FITS::CFITSIO => 1.02,
 			  Astro::FITS::CFITSIO::CheckStatus => 0.03,
-			  Astro::FITS::Header::CFITSIO,
+			  Astro::FITS::Header::CFITSIO => 0,
 			 }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
      (

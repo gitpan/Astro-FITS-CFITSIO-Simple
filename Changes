@@ -1,5 +1,8 @@
 Revision history for Perl extension Astro::FITS::CFITSIO::Simple.
 
+0.15 Tue Jan  9 11:52:54 EST 2007
+	- attempting to read zero-row binary tables resulted in PDL errors.
+
 0.14 Mon Aug 22 13:02:02 EDT 2005
         - forgot to update the README to reflect the patches.
 

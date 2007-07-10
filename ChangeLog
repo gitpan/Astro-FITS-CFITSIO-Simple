@@ -1,0 +1,241 @@
+2007-01-09 11:52 -0500  dj  <dj@localhost.localdomain>  (e54e829d6a61 [tip])
+
+	Tag: 0.15
+	* data/zero_rows.fits, lib/Astro/FITS/CFITSIO/Simple/Table.pm,
+	t/zero_rows.t:
+	handle zero-row binary tables
+
+2007-01-09 11:50 -0500  dj  <dj@localhost.localdomain>  (04bb8d549f60)
+
+	* MANIFEST:
+	fixup
+
+2007-01-06 16:17 +0000  dj  <dj>  (ef41f8d73602)
+
+	* ChangeLog:
+	added ChangeLog
+
+2005-09-20 21:34 +0000  dj  <dj>  (c8a21715c77f)
+
+	* Changes, Makefile.PL:
+	added PDL prereq
+
+2007-01-06 11:19 -0500  djerius  <djerius@cfa.harvard.edu>  (fefc2c6cdfae)
+
+	* .hgtags:
+	Added tag V0_14 for changeset ea6919a255f5
+
+2005-08-22 17:01 +0000  dj  <dj>  (ea6919a255f5 [V0_14])
+
+	* lib/Astro/FITS/CFITSIO/Simple.pm:
+	bumped version
+
+2005-09-20 17:34  dj
+
+	* Changes, Makefile.PL: added PDL prereq
+
+2005-08-22 13:01  tag V0_14
+
+2005-08-22 13:01  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple.pm: bumped version
+
+2005-08-22 12:58  dj
+
+	* README: updated README
+
+2005-08-22 12:42  tag V0_13
+
+2005-08-22 12:42  dj
+
+	* Changes: [no log message]
+
+2005-08-22 12:40  dj
+
+	* lib/Astro/FITS/CFITSIO/: Simple.pm, Simple/Table.pm: small fixes
+	  to error output
+
+2005-08-22 12:39  dj
+
+	* Makefile.PL: added code to check for unpatched A::F::H
+
+2005-05-12 11:54  tag V0_12
+
+2005-05-12 11:54  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple/Table.pm: typo
+
+2005-05-12 11:51  dj
+
+	* t/ret.t: didn't catch scalar context, implicit reading of more
+	  than one column
+
+2005-05-12 11:46  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple.pm: version bump
+
+2005-05-12 11:45  dj
+
+	* Changes: [no log message]
+
+2005-05-12 11:44  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple/Table.pm: test for inappropriate
+	  call in scalar context when reading multiple columns was broken
+
+2005-05-11 15:37  tag V0_11
+
+2005-05-11 15:37  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple.pod: after bug fix for bit field
+	  chunk reset bogosity, speed has improved tremendously, so no need
+	  to warn about slowness.
+
+2005-05-11 15:36  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple.pm: new version
+
+2005-05-11 15:36  dj
+
+	* Changes: [no log message]
+
+2005-05-11 15:33  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple/Table.pm: when processing bit
+	  fields as bits (not logicals), the ENTIRE destination piddle was
+	  set to zero, not just the destination for the current chunk.
+	  this resulted not only in bogus data, but also slowed things down
+	  TREMENDOUSLY.
+
+	  it wasn't caught by the tests because the data all fit inside of
+	  a single chunk.  they've been tweaked to set the chunk size to 1
+	  so as to trigger bugs like these.
+
+2005-05-11 15:21  dj
+
+	* t/: ret.t, rfilter.t, table_dtypes.t: forced ninc to 1 to reveal
+	  errors in processing multiple chunks
+
+2005-05-11 15:15  dj
+
+	* t/binbits.t: force one row per chunk in order to expose errors
+	  which weren't caught because all of the data fit in one chunk.
+
+2005-05-11 09:58  tag V0_1
+
+2005-05-11 09:58  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple/Table.pm: gotta check if progress
+	  is to be made!
+
+2005-05-11 09:58  dj
+
+	* MANIFEST, lib/Astro/FITS/CFITSIO/Simple/Table.pm: oops. forgot to
+	  finish progress bar
+
+2005-05-11 09:43  dj
+
+	* GNUmakefile.local: [no log message]
+
+2005-05-11 09:40  dj
+
+	* data/foo4.fits: new data for test
+
+2005-05-11 09:40  dj
+
+	* t/: binbits.t, sub_cols.t: new tests
+
+2005-05-11 09:40  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple/PDL.pm, Changes, MANIFEST,
+	  lib/Astro/FITS/CFITSIO/Simple/PrintStatus.pm: [no log message]
+
+2005-05-11 09:36  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple/Table.pm: added support for
+	  subtractive column name specification
+
+	  major reorganization to handle bit columns. one big change is
+	  that data transfer between buffers is now done via on the fly
+	  created subroutines.
+
+2005-05-11 09:33  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple.pod: added docs for status output,
+	  subtractive column selection, bit field support.
+
+2005-05-11 09:32  dj
+
+	* Makefile.PL: now require Scalar::Util
+
+2005-05-11 09:32  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple.pm: new version
+
+2004-10-19 13:22  tag V0_03
+
+2004-10-19 13:22  dj
+
+	* Changes, lib/Astro/FITS/CFITSIO/Simple.pm,
+	  lib/Astro/FITS/CFITSIO/Simple/Table.pm, t/rfilter.t: retinfo was
+	  returning unfiltered data
+
+2004-04-12 18:22  tag V0_02
+
+2004-04-12 18:22  dj
+
+	* Changes, lib/Astro/FITS/CFITSIO/Simple.pm,
+	  lib/Astro/FITS/CFITSIO/Simple.pod,
+	  lib/Astro/FITS/CFITSIO/Simple/Table.pm: [no log message]
+
+2004-04-12 18:22  dj
+
+	* lib/Astro/FITS/CFITSIO/Simple/PDL.pm: "supports" TULONG and
+	  TUINT.  not really. it just points them at long(), which is
+	  wrong.  But, PDL has no uint or ulong types.
+
+2004-04-07 17:22  tag V0_01
+
+2004-04-07 17:22  dj
+
+	* t/pod.t: [no log message]
+
+2004-04-07 17:04  dj
+
+	* MANIFEST: [no log message]
+
+2004-04-07 15:27  dj
+
+	* GNUmakefile.local, lib/Astro/FITS/CFITSIO/Simple.pod,
+	  lib/Astro/FITS/CFITSIO/Simple/Image.pm,
+	  lib/Astro/FITS/CFITSIO/Simple/PDL.pm,
+	  lib/Astro/FITS/CFITSIO/Simple/Table.pm: [no log message]
+
+2004-04-07 13:50  tag initial
+
+2004-04-07 13:50  dj
+
+	* Changes, GNUmakefile.local, MANIFEST, Makefile.PL, README,
+	  data/f001.fits, data/f002.fits, data/f003.fits, data/image.fits,
+	  lib/Astro/FITS/CFITSIO/Simple.pm,
+	  lib/Astro/FITS/CFITSIO/Simple.pod,
+	  lib/Astro/FITS/CFITSIO/Simple/Image.pm,
+	  lib/Astro/FITS/CFITSIO/Simple/PDL.pm,
+	  lib/Astro/FITS/CFITSIO/Simple/Table.pm, t/00PDL.t, t/00Simple.t,
+	  t/common.pl, t/image_auto.t, t/image_dtype.t, t/namedhdu.t,
+	  t/ndim.t, t/reset.t, t/ret.t, t/rfilter.t, t/table_dtypes.t:
+	  Initial revision
+
+2004-04-07 13:50  dj
+
+	* Changes, GNUmakefile.local, MANIFEST, Makefile.PL, README,
+	  data/f001.fits, data/f002.fits, data/f003.fits, data/image.fits,
+	  lib/Astro/FITS/CFITSIO/Simple.pm,
+	  lib/Astro/FITS/CFITSIO/Simple.pod,
+	  lib/Astro/FITS/CFITSIO/Simple/Image.pm,
+	  lib/Astro/FITS/CFITSIO/Simple/PDL.pm,
+	  lib/Astro/FITS/CFITSIO/Simple/Table.pm, t/00PDL.t, t/00Simple.t,
+	  t/common.pl, t/image_auto.t, t/image_dtype.t, t/namedhdu.t,
+	  t/ndim.t, t/reset.t, t/ret.t, t/rfilter.t, t/table_dtypes.t: [no
+	  log message]
+

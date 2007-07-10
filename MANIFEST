@@ -1,9 +1,11 @@
+ChangeLog
 Changes
 data/f001.fits
 data/f002.fits
 data/f003.fits
 data/foo4.fits
 data/image.fits
+data/zero_rows.fits
 lib/Astro/FITS/CFITSIO/Simple.pm
 lib/Astro/FITS/CFITSIO/Simple.pod
 lib/Astro/FITS/CFITSIO/Simple/Image.pm
@@ -27,4 +29,5 @@ t/ret.t
 t/rfilter.t
 t/sub_cols.t
 t/table_dtypes.t
+t/zero_rows.t
 META.yml                                 Module meta-data (added by MakeMaker)
