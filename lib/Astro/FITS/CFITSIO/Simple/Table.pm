@@ -32,6 +32,7 @@ our @EXPORT = qw(
 	
 );
 
+our $VERSION = '0.16';
 
 # this must be called ONLY from rdfits.  it makes assumptions about
 # the validity of arguments that have been verified by rdfits.
@@ -57,6 +58,7 @@ sub _rdfitsTable
 		   normalize_keys => sub{ lc $_[0] },
 		   spec =>
 		 {
+                  nullval  => { type => SCALAR,  optional => 1 },
 		  rfilter  => { type => SCALAR,  optional => 1 },
 		  dtypes   => { type => HASHREF, optional => 1 },
 		  ninc     => { type => SCALAR,  optional => 1 },
@@ -330,7 +332,11 @@ sub _rdfitsTable
       $col->{tmppdl} = $tmppdl{$col->{tmpshape}};
 
 
-      $col->{nullval} = $PDL::Bad::Status ? badvalue( $col->{ptype} ) : undef;
+      # How to handle null pixels.  A nullval of zero signals CFITSIO to
+      # ignore null pixels
+      $col->{nullval} = exists $opt{nullval}   ? $opt{nullval}
+                      : $PDL::Bad::Status      ? badvalue( $col->{ptype} )
+                      :                          0;
       $col->{anynul} = 0;
     }
 
@@ -449,7 +455,6 @@ sub _rdfitsTable
 	$col->{tmppdl}->upd_data;
 
 	# transfer the data to the final piddle
-#print STDERR "here\n"; flush STDERR;
 	$col->{dataxfer}->($col, $rows_done, $rows_this_time);
 	$col->{data}->badflag($col->{anynul}) if $PDL::Bad::Status;
 

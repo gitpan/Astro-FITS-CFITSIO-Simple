@@ -1,5 +1,7 @@
 package Astro::FITS::CFITSIO::Simple::PrintStatus;
 
+our $VERSION = '0.16';
+
 sub new
 {
   my ( $class, $what, $nrows ) = @_;

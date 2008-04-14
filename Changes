@@ -1,5 +1,11 @@
 Revision history for Perl extension Astro::FITS::CFITSIO::Simple.
 
+0.16 Mon Apr 14 15:24:09 EDT 2008
+        - incorrect handling of FITS null values if PDL did not have
+	  bad value support.
+        - added nullval option to rdfits() to allow user control over
+	  null value processing.
+
 0.15 Tue Jan  9 11:52:54 EST 2007
 	- attempting to read zero-row binary tables resulted in PDL errors.
 

@@ -208,6 +208,13 @@ The number of rows to read incrementally. By default, this number is
 set according to C<fits_get_rowsize()> for the table being read.  This
 is best left unset.
 
+=item nullval
+
+The value with which to fill in null data values.  If B<PDL> has been
+built with bad value support, it defaults to the bad value for the
+data type.  If not, it defaults to C<0>, which signals CFITSIO to
+ignore null pixels.
+
 =item rethash
 
   %data = rdfits('foo.fits', @cols, { rethash=>1 });
@@ -372,6 +379,13 @@ data.  The application can override the output datatype with this
 option. The argument should be a C<PDL::Type> object. For example:
 
   $float_img = rdfits( $file, { dtype => float } );
+
+=item nullval
+
+The value with which to fill in null data values.  If B<PDL> has been
+built with bad value support, it defaults to the bad value for the
+data type.  If not, it defaults to C<0>, which signals CFITSIO to
+ignore null pixels.
 
 =back
 

@@ -1,16 +1,19 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Astro-FITS-CFITSIO-Simple
-version:      0.15
-version_from: lib/Astro/FITS/CFITSIO/Simple.pm
-installdirs:  site
-requires:
+--- #YAML:1.0
+name:                Astro-FITS-CFITSIO-Simple
+version:             0.16
+abstract:            ~
+license:             ~
+generated_by:        ExtUtils::MakeMaker version 6.36
+distribution_type:   module
+requires:     
     Astro::FITS::CFITSIO:          1.02
     Astro::FITS::CFITSIO::CheckStatus: 0.03
     Astro::FITS::Header::CFITSIO:  0
     Params::Validate:              0.72
     PDL:                           0
     Scalar::Util:                  0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30_01
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - Diab Jerius <djerius@cpan.org>

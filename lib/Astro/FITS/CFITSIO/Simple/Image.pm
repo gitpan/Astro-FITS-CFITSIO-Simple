@@ -37,8 +37,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.01';
-
+our $VERSION = '0.16';
 
 # this must be called ONLY from rdfits.  it makes assumptions about
 # the validity of arguments that have been verified by rdfits.
@@ -62,9 +61,8 @@ sub _rdfitsImage
     validate_with( params => [ $opts ],
 		   normalize_keys => sub{ lc $_[0] },
 		   spec => {
-			    dtype => { isa => 'PDL::Type',
-				       optional => 1,
-				     },
+                            nullval => { type => SCALAR, optional => 1 },
+			    dtype  => { isa => 'PDL::Type', optional => 1 },
 			   },
 		 );
 
@@ -88,8 +86,11 @@ sub _rdfitsImage
   # as all we care about is the size of the data type
   my $ctype = pdl2cfitsio($ptype);
 
-  # if bad values around, do something special
-  my $nullval = $PDL::Bad::Status ? badvalue( $ptype ) : undef;
+  # How to handle null pixels.  A nullval of zero signals CFITSIO to
+  # ignore null pixels
+  my $nullval = exists $opt{nullval}   ? $opt{nullval}
+              : $PDL::Bad::Status      ? badvalue( $ptype )
+              :                          0;
 
   $fptr->read_pix( $ctype, [ (1) x @naxes ],
 		   $data->nelem, $nullval, ${$data->get_dataref},
