@@ -1,6 +1,6 @@
 package Astro::FITS::CFITSIO::Simple::PrintStatus;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 sub new
 {

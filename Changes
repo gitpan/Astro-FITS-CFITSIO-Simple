@@ -1,5 +1,8 @@
 Revision history for Perl extension Astro::FITS::CFITSIO::Simple.
 
+0.17 Wed Dec 29 11:36:35 EST 2010
+	- fix bareword warnings
+
 0.16 Mon Apr 14 15:24:09 EDT 2008
         - incorrect handling of FITS null values if PDL did not have
 	  bad value support.

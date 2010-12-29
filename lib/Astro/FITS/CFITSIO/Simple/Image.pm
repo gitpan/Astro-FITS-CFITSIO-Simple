@@ -37,7 +37,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 # this must be called ONLY from rdfits.  it makes assumptions about
 # the validity of arguments that have been verified by rdfits.

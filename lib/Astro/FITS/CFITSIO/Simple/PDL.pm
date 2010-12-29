@@ -40,7 +40,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 our %PDL2CFITSIO =
   (

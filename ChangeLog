@@ -1,8 +1,31 @@
-2008-04-14  Diab Jerius  <djerius@cfa.harvard.edu>
+2010-12-29  Diab Jerius  <dj@macabre.cfa.harvard.edu>
 
-	Tag 0.16
+	Tag 0.17
 
-2008-04-14 15:27 -0400  djerius  <djerius@cfa.harvard.edu>  (4ed5fff1ecbc [tip])
+2010-12-29 11:36 -0500  djerius  <djerius@cfa.harvard.edu>  (f73ded8d0157 [tip])
+
+	* lib/Astro/FITS/CFITSIO/Simple/Table.pm:
+	If PDL::Core isn't used here, the type conversion routines are
+	sometimes flagged by Perl as barewords.
+
+2008-04-14 15:34 -0400  djerius  <djerius@cfa.harvard.edu>  (6609cceffa19)
+
+	* .hgtags:
+	Added tag 0.16 for changeset 9a169d375a56
+
+2008-04-14 15:34 -0400  djerius  <djerius@cfa.harvard.edu>  (9a169d375a56 [0.16])
+
+	* ChangeLog, Changes:
+	update for release
+
+2008-04-14 15:34 -0400  djerius  <djerius@cfa.harvard.edu>  (452c5b7a038d)
+
+	* MANIFEST.SKIP: new file.
+	* MANIFEST: deleted file.
+	* MANIFEST, MANIFEST.SKIP:
+	modernify manifest handling
+
+2008-04-14 15:27 -0400  djerius  <djerius@cfa.harvard.edu>  (4ed5fff1ecbc)
 
 	* lib/Astro/FITS/CFITSIO/Simple.pm, lib/Astro/FITS/CFITSIO/Simple.pod,
 	lib/Astro/FITS/CFITSIO/Simple/Image.pm,
@@ -34,6 +57,7 @@
 
 2007-01-09 11:52 -0500  dj  <dj@localhost.localdomain>  (e54e829d6a61)
 
+	* data/zero_rows.fits, t/zero_rows.t: new file.
 	* data/zero_rows.fits, lib/Astro/FITS/CFITSIO/Simple/Table.pm,
 	t/zero_rows.t:
 	handle zero-row binary tables
@@ -45,6 +69,7 @@
 
 2007-01-06 16:17 +0000  dj  <dj>  (ef41f8d73602)
 
+	* ChangeLog: new file.
 	* ChangeLog:
 	added ChangeLog
 
@@ -182,17 +207,21 @@
 
 2005-05-11 13:43 +0000  dj  <dj>  (ef13f6247b8a)
 
+	* lib/Astro/FITS/CFITSIO/Simple/PrintStatus.pm: new file.
+	* GNUmakefile.local: deleted file.
 	* Changes, GNUmakefile.local, MANIFEST,
 	lib/Astro/FITS/CFITSIO/Simple/PrintStatus.pm:
 	Empty changelog
 
 2005-05-11 13:40 +0000  dj  <dj>  (aa704682ad92)
 
+	* data/foo4.fits: new file.
 	* data/foo4.fits:
 	new data for test
 
 2005-05-11 13:40 +0000  dj  <dj>  (9cf4cf741eaa)
 
+	* t/binbits.t, t/sub_cols.t: new file.
 	* t/binbits.t, t/sub_cols.t:
 	new tests
 
@@ -262,6 +291,7 @@
 
 2004-04-07 21:22 +0000  dj  <dj>  (185c5eb51c29 [V0_01])
 
+	* t/pod.t: new file.
 	* t/pod.t:
 	Empty changelog
 
@@ -280,11 +310,22 @@
 
 2007-01-06 11:18 -0500  djerius  <djerius@cfa.harvard.edu>  (36510956cf5b)
 
+	* .hgtags: new file.
 	* .hgtags:
 	Added tag initial for changeset c5a02e2d19f4
 
 2004-04-07 17:50 +0000  dj  <dj>  (c5a02e2d19f4 [initial])
 
+	* .hgignore, Changes, GNUmakefile.local, MANIFEST, Makefile.PL,
+	README, data/f001.fits, data/f002.fits, data/f003.fits,
+	data/image.fits, lib/Astro/FITS/CFITSIO/Simple.pm,
+	lib/Astro/FITS/CFITSIO/Simple.pod,
+	lib/Astro/FITS/CFITSIO/Simple/Image.pm,
+	lib/Astro/FITS/CFITSIO/Simple/PDL.pm,
+	lib/Astro/FITS/CFITSIO/Simple/Table.pm, t/00PDL.t, t/00Simple.t,
+	t/common.pl, t/image_auto.t, t/image_dtype.t, t/namedhdu.t,
+	t/ndim.t, t/reset.t, t/ret.t, t/rfilter.t, t/table_dtypes.t: new
+	file.
 	* .hgignore, Changes, GNUmakefile.local, MANIFEST, Makefile.PL,
 	README, data/f001.fits, data/f002.fits, data/f003.fits,
 	data/image.fits, lib/Astro/FITS/CFITSIO/Simple.pm,

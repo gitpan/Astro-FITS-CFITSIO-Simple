@@ -13,6 +13,7 @@ use Carp;
 use POSIX ();
 use Scalar::Util qw/blessed/;
 use PDL;
+use PDL::Core qw[ byte ushort long ];
 
 use Astro::FITS::CFITSIO qw/ :constants /;
 use Astro::FITS::CFITSIO::CheckStatus;
@@ -32,7 +33,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 # this must be called ONLY from rdfits.  it makes assumptions about
 # the validity of arguments that have been verified by rdfits.
