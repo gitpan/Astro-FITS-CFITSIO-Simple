@@ -1,5 +1,8 @@
 Revision history for Perl extension Astro::FITS::CFITSIO::Simple.
 
+0.18 Mon Feb 14 14:35:32 EST 2011
+        - add defdtype option
+
 0.17 Wed Dec 29 11:36:35 EST 2010
 	- fix bareword warnings
 

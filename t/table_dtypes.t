@@ -1,4 +1,4 @@
-use Test::More tests => 10;
+use Test::More tests => 15;
 
 use strict;
 use warnings;
@@ -22,6 +22,15 @@ eval {
 };
 ok ( ! $@, "dtype" ) or diag( $@ );
 
+# success
+eval {
+
+    my %data = rdfits( $file, { ninc => 1, defdtype => byte } );
+
+    ok ( byte == $data{$_}->type, "defdtype: $_" ) for keys %data;
+
+};
+ok ( ! $@, "dtype" ) or diag( $@ );
 
 # failure
 foreach ( 5, 'snack' )

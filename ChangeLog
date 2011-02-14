@@ -1,8 +1,29 @@
-2010-12-29  Diab Jerius  <dj@macabre.cfa.harvard.edu>
+2011-02-14 14:41 -0500  djerius  <djerius@cfa.harvard.edu>  (b3dd6de06791 [tip])
 
-	Tag 0.17
+	* t/table_dtypes.t:
+	add test for defdtype
 
-2010-12-29 11:36 -0500  djerius  <djerius@cfa.harvard.edu>  (f73ded8d0157 [tip])
+2011-02-14 14:36 -0500  djerius  <djerius@cfa.harvard.edu>  (d49eb54315ff)
+
+	* lib/Astro/FITS/CFITSIO/Simple.pod,
+	lib/Astro/FITS/CFITSIO/Simple/Table.pm:
+	add defdtype option to change default type for all table columns
+
+2010-12-29 12:00 -0500  djerius  <djerius@cfa.harvard.edu>  (7661de4266dc)
+
+	* .hgtags:
+	Added tag 0.17 for changeset d7105094eb2a
+
+2010-12-29 11:39 -0500  djerius  <djerius@cfa.harvard.edu>  (d7105094eb2a [0.17])
+
+	* ChangeLog, Changes, lib/Astro/FITS/CFITSIO/Simple.pm,
+	lib/Astro/FITS/CFITSIO/Simple/Image.pm,
+	lib/Astro/FITS/CFITSIO/Simple/PDL.pm,
+	lib/Astro/FITS/CFITSIO/Simple/PrintStatus.pm,
+	lib/Astro/FITS/CFITSIO/Simple/Table.pm:
+	update version and logs for release
+
+2010-12-29 11:36 -0500  djerius  <djerius@cfa.harvard.edu>  (f73ded8d0157)
 
 	* lib/Astro/FITS/CFITSIO/Simple/Table.pm:
 	If PDL::Core isn't used here, the type conversion routines are

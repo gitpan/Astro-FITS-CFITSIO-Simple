@@ -84,8 +84,8 @@ Some of this behavior may be changed using the C<rethash> option.
 
 Normally B<rdfits> maps the FITS column type (double, long, etc) to
 the best matched PDL type.  This may be overriden (for instance to
-promote floats to doubles) using the C<dtypes> option.  Bit columns
-are a bit different.  (See L</Reading Bit Data>).
+promote floats to doubles) using the C<dtypes> or C<defdtype> options.
+Bit columns are a bit different.  (See L</Reading Bit Data>).
 
 B<rdfits> can optionally return the full FITS header.  If an image is
 read, the resultant piddle's header is set to a hash tied to a
@@ -105,13 +105,15 @@ of FITS headers.
 
 Table data with type BIT are by default mapped onto a PDL type which
 best matches the FITS element size, with the packing of the bits
-preserved. The user may override this type using the C<-dtypes> option
-(see the description under "Table Options"below).
+preserved. The user may override this type using the C<dtypes> or
+C<defdtype> options (see the description under L</Table Options>
+below).
 
 Another option is to treat each bit as an independent quantity, with
 each bit stored in its own piddle element.  This may be accomplished
-by specifying the PDL type (via C<-dtypes>) as the string C<logical>.
-Bits will then be stored as bytes, with each byte representing a bit.
+by specifying the PDL type (via C<dtypes> or C<defdtype>) as the
+string C<logical>.  Bits will then be stored as bytes, with each byte
+representing a bit.
 
 =head2 Functions
 
@@ -187,11 +189,19 @@ an error otherwise.
 
 =item dtypes
 
+=item defdtype
+
 Normally, B<rdfits> will create the best fit PDL type for each column
-read.  The application can override the output datatype for a given
-column with this option. The argument should be a reference to a hash
-whose keys are the column names and whose values are C<PDL::Type>
-objects of the type wanted. For example:
+read.  A default datatype for all columns can be set with C<defdtype>.
+Individual columns' datatypes can be set with C<dtypes>.
+
+C<defdtype> takes a single value, a B<PDL::Type> object.
+
+   %data = rdfits( $file, { defdtype => double } );
+
+C<dtypes> takes a reference to a hash whose keys are the column names
+and whose values are C<PDL::Type> objects of the type wanted. For
+example:
 
   ($a,$b,$c) = 
     rdfits( $file, qw/ a b c /, 

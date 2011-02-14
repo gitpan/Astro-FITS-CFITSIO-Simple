@@ -33,7 +33,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 # this must be called ONLY from rdfits.  it makes assumptions about
 # the validity of arguments that have been verified by rdfits.
@@ -62,6 +62,7 @@ sub _rdfitsTable
                   nullval  => { type => SCALAR,  optional => 1 },
 		  rfilter  => { type => SCALAR,  optional => 1 },
 		  dtypes   => { type => HASHREF, optional => 1 },
+		  defdtype => { isa => qw[ PDL::Type ], optional => 1 },
 		  ninc     => { type => SCALAR,  optional => 1 },
 		  rethash  => { type => SCALAR,  default  => 0 },
 		  retinfo  => { type => SCALAR,  default  => 0 },
@@ -188,9 +189,9 @@ sub _rdfitsTable
     $col->{ptype} = undef;
 
     # user specified piddle type?
-    if ( exists $user_types{$name} )
+    if ( exists $user_types{$name} || exists $opt{defdtype} )
     {
-      my $type = delete $user_types{$name};
+      my $type = delete $user_types{$name} || $opt{defdtype};
 
       # bit columns are so special
       if ( TBIT == $col->{btype} )

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Astro-FITS-CFITSIO-Simple
-version:            0.17
+version:            0.18
 abstract:           ~
 author:
     - Diab Jerius <djerius@cpan.org>
